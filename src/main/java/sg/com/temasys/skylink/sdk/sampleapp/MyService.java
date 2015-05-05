@@ -195,7 +195,8 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
     }
 
 //    @Override
-    public int onStartCommand(){
+    public int onStartCommand(Intent var, int start, int end){
+        super.onStartCommand(var, start, end);
         Log.d("Service","OnStartCommand");
         String apiKey = getString(R.string.app_key);
         String apiSecret = getString(R.string.app_secret);
@@ -257,7 +258,7 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
     public void onConnect(boolean isSuccess, String message) {
         //update textview if connection is successful
         if (isSuccess) {
-            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
+//            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
             Toast.makeText(this, "Skylink Connection Failed\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
@@ -302,7 +303,7 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
         this.remotePeerId = remotePeerId;
         if (userData instanceof String) {
             this.peerName = (String) userData;
-            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
+//            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         }
     }
 
@@ -318,7 +319,7 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
         this.remotePeerId = null;
         this.peerName = null;
         //update textview to show room status
-        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
+//        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
     }
 
     @Override
