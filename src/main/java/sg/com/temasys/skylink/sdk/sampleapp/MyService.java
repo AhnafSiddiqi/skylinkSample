@@ -160,7 +160,7 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
     /**
      * Retrives message written in edit text and adds it to the chatlistview
      *
-     * @param isPrivateMessage
+     //* @param isPrivateMessage
      * @return message that was added to the listview
      */
 //    private String addMessageToListView(boolean isPrivateMessage) {
@@ -341,8 +341,8 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
         }
         //add message to listview and update ui
         if (message instanceof String) {
-            chatMessageCollection.add(this.peerName + " : " + chatPrefix + message);
-            adapter.notifyDataSetChanged();
+            //chatMessageCollection.add(this.peerName + " : " + chatPrefix + message);
+            //adapter.notifyDataSetChanged();
         }
     }
 
@@ -379,8 +379,8 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
         }
         //add message to listview and update ui
         if (message instanceof String) {
-            chatMessageCollection.add(this.peerName + " : " + chatPrefix + message);
-            adapter.notifyDataSetChanged();
+            //chatMessageCollection.add(this.peerName + " : " + chatPrefix + message);
+            //adapter.notifyDataSetChanged();
         }
     }
 
