@@ -1,9 +1,14 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -34,7 +39,8 @@ public class MainActivity extends ActionBarActivity
     private static final int CASE_FRAGMENT_DATA_TRANSFER = 4;
     private static final int CASE_FRAGMENT_MULTI_PARTY_VIDEO_CALL = 5;
     private static final String TAG = MainActivity.class.getName();
-
+    MyService mService;
+    boolean mbound = false;
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -44,11 +50,27 @@ public class MainActivity extends ActionBarActivity
      */
     private CharSequence mTitle;
 
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        startService(new Intent(this, MyService.class));
+        Bundle extras = getIntent().getExtras();
+        if(extras == null) {
+            Intent intent = new Intent(this, MyServiceVideo.class);
+            startService(intent);
+        }
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        Fragment fragmentToLaunch = getFragmentToLaunch(CASE_FRAGMENT_VIDEO_CALL);
+
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, fragmentToLaunch)
+                .commit();
+        //startService(new Intent(this, MyService.class));
 //        mNavigationDrawerFragment = (NavigationDrawerFragment)
 //                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
 //        mTitle = getTitle();
@@ -144,11 +166,11 @@ public class MainActivity extends ActionBarActivity
     public Fragment getFragmentToLaunch(int position) {
         Fragment fragmentToLaunch = null;
         switch (position) {
-            case CASE_FRAGMENT_AUDIO_CALL:
-                fragmentToLaunch = new AudioCallFragment();
-                break;
             case CASE_FRAGMENT_VIDEO_CALL:
                 fragmentToLaunch = new VideoCallFragment();
+                break;
+            case CASE_FRAGMENT_AUDIO_CALL:
+                fragmentToLaunch = new AudioCallFragment();
                 break;
             case CASE_FRAGMENT_CHAT:
                 fragmentToLaunch = new ChatFragment();

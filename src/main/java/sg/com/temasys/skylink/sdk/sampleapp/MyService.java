@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -54,7 +55,13 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
     private String peerName;
     private Button btnSendP2PMessage;
     private boolean connected;
+    private final IBinder mBinder = new LocalBinder();
 
+    public class LocalBinder extends Binder {
+        MyService getService(){
+            return MyService.this;
+        }
+    }
 //    @Override
 //    public View onCreateView(LayoutInflater inflater, ViewGroup container,
 //                             Bundle savedInstanceState) {
@@ -351,8 +358,8 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("My notification")
-                        .setContentText("Hello World!");
+                        .setContentTitle("Notification")
+                        .setContentText("A client is calling");
 
         Intent resultIntent = new Intent(this, MainActivity.class);
 // Because clicking the notification opens a new ("special") activity, there's
@@ -379,6 +386,9 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
         }
         //add message to listview and update ui
         if (message instanceof String) {
+            if(message.equals("hello")){
+                Toast.makeText(this, "Client knocking", Toast.LENGTH_SHORT).show();
+            }
             //chatMessageCollection.add(this.peerName + " : " + chatPrefix + message);
             //adapter.notifyDataSetChanged();
         }
@@ -386,6 +396,6 @@ public class MyService extends Service implements LifeCycleListener, RemotePeerL
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mBinder;
     }
 }

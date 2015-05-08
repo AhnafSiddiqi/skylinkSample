@@ -61,18 +61,18 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
         btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
         etRoomName = (EditText) rootView.findViewById(R.id.et_room_name);
-
+        etRoomName.setVisibility(View.GONE);
         toggleAudioButton = (Button) rootView.findViewById(R.id.toggle_audio);
         toggleVideoButton = (Button) rootView.findViewById(R.id.toggle_video);
 
-
-
-
-                String roomName = "Bob";
+        btnEnterRoom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String roomName = "bob";
                 if (roomName.isEmpty()) {
                     Toast.makeText(getActivity(), "Please enter valid room name", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-
 
                 btnEnterRoom.setVisibility(View.GONE);
 
@@ -99,8 +99,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                 // Use the Audio router to switch between headphone and headset
                 audioRouter.startAudioRouting(getActivity().getApplicationContext());
                 connected = true;
-
-
+            }
+        });
 
         toggleAudioButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -367,10 +367,12 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
         Log.d(TAG, "onRemotePeerUserDataReceive " + remotePeerId);
+        Toast.makeText(getActivity(), "onRemotePeer", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onOpenDataConnection(String peerId) {
         Log.d(TAG, "onOpenDataConnection");
+        Toast.makeText(getActivity(), "onOpenDataConnection", Toast.LENGTH_SHORT).show();
     }
 }
