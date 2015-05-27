@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">SampleApp</string>
+    <string name="app_name">Shoppe</string>
     <string name="title_section1"> Audio Call </string>
     <string name="title_section2"> Video Call </string>
     <string name="title_section3"> Chat </string>
@@ -12,7 +12,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_build_info">Build information</string>
     <string name="enter_room_name">Enter Room Name</string>
-    <string name="enter_room">Submit</string>
+    <string name="enter_room">Accept Call</string>
     <string name="send_data_peer">Send to Peer</string>
     <string name="send_data_room">Send to Room</string>
     <string name="data_transfer_status">Ready to transfer %s bytes</string>

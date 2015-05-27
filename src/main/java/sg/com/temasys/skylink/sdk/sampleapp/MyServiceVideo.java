@@ -7,6 +7,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.Point;
 import android.media.AudioManager;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -25,7 +27,11 @@ import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Date;
+import java.util.HashMap;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
@@ -39,8 +45,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
  */
 public class MyServiceVideo extends Service implements LifeCycleListener, MediaListener, RemotePeerListener, MessagesListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
-    public static final String MY_USER_NAME = "videoCallUser";
-    public static final String ROOM_NAME = "videoRoom";
+    public static final String MY_USER_NAME = "bob";
+    public static final JSONObject UserObject = new JSONObject();
     private static final String ARG_SECTION_NUMBER = "section_number";
     //set height width for self-video when in call
     public static final int WIDTH = 350;
@@ -57,9 +63,7 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
     private boolean videoMuted;
     private boolean connected;
     private AudioRouter audioRouter;
-    private String peerName;
-    private TextView tvRoomDetails;
-    private String remotePeerId;
+
 
     @Override
     public void onCreate() {
@@ -70,6 +74,13 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        try {
+            UserObject.put("id","bob");
+            UserObject.put("name","Bob");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         Log.d("Service","onStart");
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         String roomName = "bob";
@@ -93,7 +104,7 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
                         apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
         skylinkConnection.connectToRoom(skylinkConnectionString,
-                MY_USER_NAME);
+                UserObject);
         Log.d("Service","ConnectToRoom");
         // Use the Audio router to switch between headphone and headset
         audioRouter.startAudioRouting(this.getApplicationContext());
@@ -118,6 +129,7 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
             //set listeners to receive callbacks when events are triggered
             skylinkConnection.setLifeCycleListener(this);
             skylinkConnection.setMediaListener(this);
+            skylinkConnection.setMessagesListener(this);
             skylinkConnection.setRemotePeerListener(this);
         }
     }
@@ -149,12 +161,7 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
 
     @Override
     public void onConnect(boolean isSuccess, String message) {
-        if (isSuccess) {
-            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
-        } else {
-            Toast.makeText(this, "Skylink Connection Failed\nReason : "
-                    + message, Toast.LENGTH_SHORT).show();
-        }
+
     }
 
     @Override
@@ -231,49 +238,10 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
 
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
-        Toast.makeText(this, "Your peer has just connected", Toast.LENGTH_SHORT).show();
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("Notification")
-                        .setContentText("A client is calling");
 
-        Intent resultIntent = new Intent(this, MainActivity.class);
-        String strName = "No";
-        resultIntent.putExtra("Msg",strName);
-// Because clicking the notification opens a new ("special") activity, there's
-// no need to create an artificial back stack.
-        PendingIntent resultPendingIntent =
-                PendingIntent.getActivity(
-                        this,
-                        0,
-                        resultIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
 
-        mBuilder.setContentIntent(resultPendingIntent);
-        int mNotificationId = 001;
-// Gets an instance of the NotificationManager service
-        NotificationManager mNotifyMgr =
-                (NotificationManager)this.getSystemService(this.NOTIFICATION_SERVICE);
-// Builds the notification and issues it.
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (this.remotePeerId != null) {
-            Toast.makeText(getActivity(), "Rejected third peer from joining conversation",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-        //if first remote peer to join room, keep track of user and update text-view to display details
-        this.remotePeerId = remotePeerId;
-        if (userData instanceof String) {
-            this.peerName = (String) userData;
-            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
-        }
+
+
 
     }
 
@@ -284,7 +252,8 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
 
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message) {
-        Toast.makeText(this, "Your peer has left the room", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Your peer has left the room"+remotePeerId, Toast.LENGTH_SHORT).show();
+        Log.d("Service",remotePeerId);
         if (remotePeerId != null && remotePeerId.equals(this.peerId)) {
             this.peerId = null;
             View peerView = parentFragment.findViewWithTag("peer");
@@ -320,16 +289,46 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
         //add prefix if the chat is a private chat - not seen by other users.
         if (message instanceof String) {
             Toast.makeText(this, (String) message, Toast.LENGTH_SHORT).show();
-            if (message.equals("/joincall")) {
+            if (((String)message).contains("/joincall")) {
+
                 Toast.makeText(this, "Client knocking", Toast.LENGTH_SHORT).show();
-                skylinkConnection.disconnectFromRoom();
-                skylinkConnection.setLifeCycleListener(null);
-                skylinkConnection.setMediaListener(null);
-                skylinkConnection.setRemotePeerListener(null);
-                connected = false;
-                audioRouter.stopAudioRouting(this.getApplicationContext());
+                skylinkConnection.sendServerMessage(remotePeerId, "/accept"+((String) message).substring(8));
+                 Toast.makeText(this, "Your peer has just connected", Toast.LENGTH_SHORT).show();
+                NotificationCompat.Builder mBuilder =
+                        new NotificationCompat.Builder(this)
+                                .setSmallIcon(R.drawable.ic_launcher)
+                                .setContentTitle("Notification")
+                                .setContentText("A client is calling")
+                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                                .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
+                                .setAutoCancel(true);
+                Intent resultIntent = new Intent(this, MainActivity.class);
+                String strName = ((String) message).substring(9);
+                resultIntent.putExtra("Msg",strName);
+// Because clicking the notification opens a new ("special") activity, there's
+// no need to create an artificial back stack.
+                PendingIntent resultPendingIntent =
+                        PendingIntent.getActivity(
+                                this,
+                                0,
+                                resultIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                        );
+
+                mBuilder.setContentIntent(resultPendingIntent);
+                int mNotificationId = 001;
+// Gets an instance of the NotificationManager service
+                NotificationManager mNotifyMgr =
+                        (NotificationManager)this.getSystemService(this.NOTIFICATION_SERVICE);
+// Builds the notification and issues it.
+                mNotifyMgr.notify(mNotificationId, mBuilder.build());
             }
         }
+        skylinkConnection.disconnectFromRoom();
+        skylinkConnection.setLifeCycleListener(null);
+        skylinkConnection.setMediaListener(null);
+        skylinkConnection.setRemotePeerListener(null);
+        connected = false;
 
 
     }
@@ -343,6 +342,7 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
             Toast.makeText(this, "HELLO", Toast.LENGTH_SHORT).show();
             if(message.equals("/joincall")){
                 Toast.makeText(this, "Client knocking", Toast.LENGTH_SHORT).show();
+                skylinkConnection.sendServerMessage(null, "/accept");
             }
             //chatMessageCollection.add(this.peerName + " : " + chatPrefix + message);
             //adapter.notifyDataSetChanged();

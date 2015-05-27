@@ -59,13 +59,14 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Bundle extras = getIntent().getExtras();
+        String id = getIntent().getStringExtra("Msg");
         if(extras == null) {
             Intent intent = new Intent(this, MyServiceVideo.class);
             startService(intent);
         }
         FragmentManager fragmentManager = getSupportFragmentManager();
 
-        Fragment fragmentToLaunch = getFragmentToLaunch(CASE_FRAGMENT_VIDEO_CALL);
+        Fragment fragmentToLaunch = getFragmentToLaunch(CASE_FRAGMENT_VIDEO_CALL,id);
 
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragmentToLaunch)
@@ -83,13 +84,13 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        FragmentManager fragmentManager = getSupportFragmentManager();
-
-        Fragment fragmentToLaunch = getFragmentToLaunch(position);
-
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragmentToLaunch)
-                .commit();
+//        FragmentManager fragmentManager = getSupportFragmentManager();
+//
+//        Fragment fragmentToLaunch = getFragmentToLaunch(position);
+//
+//        fragmentManager.beginTransaction()
+//                .replace(R.id.container, fragmentToLaunch)
+//                .commit();
     }
 
     public void onSectionAttached(int number) {
@@ -163,7 +164,7 @@ public class MainActivity extends ActionBarActivity
      * @param position
      * @return fragment to launch based on the item clicked on the navigation drawer
      */
-    public Fragment getFragmentToLaunch(int position) {
+    public Fragment getFragmentToLaunch(int position,String uuid) {
         Fragment fragmentToLaunch = null;
         switch (position) {
             case CASE_FRAGMENT_VIDEO_CALL:
@@ -189,6 +190,7 @@ public class MainActivity extends ActionBarActivity
         }
 
         Bundle args = new Bundle();
+        args.putString("RoomName",uuid);
         args.putInt(ARG_SECTION_NUMBER, position + 1);
         fragmentToLaunch.setArguments(args);
 

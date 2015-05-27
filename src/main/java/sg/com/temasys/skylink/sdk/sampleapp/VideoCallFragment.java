@@ -22,6 +22,9 @@ import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
@@ -35,7 +38,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
  */
 public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
-    public static final String MY_USER_NAME = "videoCallUser";
+    public static final String MY_USER_NAME = "bob";
     private static final String ARG_SECTION_NUMBER = "section_number";
     //set height width for self-video when in call
     public static final int WIDTH = 350;
@@ -52,7 +55,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private boolean videoMuted;
     private boolean connected;
     private AudioRouter audioRouter;
-
+    public static final JSONObject UserObject = new JSONObject();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -65,10 +68,20 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         toggleAudioButton = (Button) rootView.findViewById(R.id.toggle_audio);
         toggleVideoButton = (Button) rootView.findViewById(R.id.toggle_video);
 
+
+
+        try {
+            UserObject.put("id","bob");
+            UserObject.put("name","Bob");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String roomName = "bob";
+               String Room = getArguments().getString("RoomName");
+                Log.d("Service",Room);
+                String roomName = Room;
                 if (roomName.isEmpty()) {
                     Toast.makeText(getActivity(), "Please enter valid room name", Toast.LENGTH_SHORT).show();
                     return;
@@ -93,9 +106,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                         getSkylinkConnectionString(roomName, apiKey,
                                 apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
-                skylinkConnection.connectToRoom(skylinkConnectionString,
-                        MY_USER_NAME);
-
+                Boolean a = skylinkConnection.connectToRoom(skylinkConnectionString,
+                        UserObject);
+                Log.d("Service",a.toString());
                 // Use the Audio router to switch between headphone and headset
                 audioRouter.startAudioRouting(getActivity().getApplicationContext());
                 connected = true;
