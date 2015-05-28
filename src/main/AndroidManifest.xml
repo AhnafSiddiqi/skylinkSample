@@ -33,6 +33,7 @@
         </activity>
 
         <service android:enabled="true" android:name="sg.com.temasys.skylink.sdk.sampleapp.MyServiceVideo" />
+
     </application>
 
 </manifest>

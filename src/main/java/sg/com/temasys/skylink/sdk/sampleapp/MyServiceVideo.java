@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -43,7 +44,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 /**
  * Created by Peh on 5/7/2015.
  */
-public class MyServiceVideo extends Service implements LifeCycleListener, MediaListener, RemotePeerListener, MessagesListener {
+public class MyServiceVideo extends Service implements LifeCycleListener, RemotePeerListener, MessagesListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
     public static final String MY_USER_NAME = "bob";
     public static final JSONObject UserObject = new JSONObject();
@@ -62,7 +63,7 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
     private boolean audioMuted;
     private boolean videoMuted;
     private boolean connected;
-    private AudioRouter audioRouter;
+
 
 
     @Override
@@ -92,8 +93,7 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
         // Initialize the skylink connection
         initializeSkylinkConnection();
 
-        // Initialize the audio router
-        initializeAudioRouter();
+
 
         // Obtaining the Skylink connection string done locally
         // In a production environment the connection string should be given
@@ -106,19 +106,12 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
         skylinkConnection.connectToRoom(skylinkConnectionString,
                 UserObject);
         Log.d("Service","ConnectToRoom");
-        // Use the Audio router to switch between headphone and headset
-        audioRouter.startAudioRouting(this.getApplicationContext());
+
         connected = true;
 
         return START_STICKY;
     }
-    private void initializeAudioRouter() {
-        if (audioRouter == null) {
-            audioRouter = AudioRouter.getInstance();
-            audioRouter.init(((AudioManager) this.
-                    getSystemService(android.content.Context.AUDIO_SERVICE)));
-        }
-    }
+
 
     private void initializeSkylinkConnection() {
         if (skylinkConnection == null) {
@@ -128,7 +121,6 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
                     getSkylinkConfig(), this.getApplicationContext());
             //set listeners to receive callbacks when events are triggered
             skylinkConnection.setLifeCycleListener(this);
-            skylinkConnection.setMediaListener(this);
             skylinkConnection.setMessagesListener(this);
             skylinkConnection.setRemotePeerListener(this);
         }
@@ -188,48 +180,7 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
         Log.d(TAG, message + " on receive log");
     }
 
-    /**
-     * Media Listeners Callbacks - triggered when receiving changes to Media Stream from the remote peer
-     */
 
-    /**
-     * Triggered after the user's local media is captured.
-     *
-     * @param videoView
-     * @param size
-     */
-    @Override
-    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
-
-    }
-
-    @Override
-    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
-        Log.d(TAG, videoView + " got size");
-    }
-
-    @Override
-    public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
-        String message = null;
-        if (isMuted) {
-            message = "Your peer muted their audio";
-        } else {
-            message = "Your peer unmuted their audio";
-        }
-
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onRemotePeerVideoToggle(String peerId, boolean isMuted) {
-        String message = null;
-        if (isMuted)
-            message = "Your peer muted video";
-        else
-            message = "Your peer unmuted their video";
-
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
 
     /**
      * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
@@ -245,10 +196,7 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
 
     }
 
-    @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
 
-    }
 
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message) {
@@ -296,9 +244,6 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
                  Toast.makeText(this, "Your peer has just connected", Toast.LENGTH_SHORT).show();
                 NotificationCompat.Builder mBuilder =
                         new NotificationCompat.Builder(this)
-                                .setSmallIcon(R.drawable.ic_launcher)
-                                .setContentTitle("Notification")
-                                .setContentText("A client is calling")
                                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                                 .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
                                 .setAutoCancel(true);
@@ -312,16 +257,18 @@ public class MyServiceVideo extends Service implements LifeCycleListener, MediaL
                                 this,
                                 0,
                                 resultIntent,
-                                PendingIntent.FLAG_UPDATE_CURRENT
+                                PendingIntent.FLAG_CANCEL_CURRENT
                         );
 
-                mBuilder.setContentIntent(resultPendingIntent);
+                mBuilder.setFullScreenIntent(resultPendingIntent,true);
                 int mNotificationId = 001;
 // Gets an instance of the NotificationManager service
                 NotificationManager mNotifyMgr =
                         (NotificationManager)this.getSystemService(this.NOTIFICATION_SERVICE);
 // Builds the notification and issues it.
-                mNotifyMgr.notify(mNotificationId, mBuilder.build());
+                Notification m = mBuilder.build();
+                m.flags = Notification.FLAG_AUTO_CANCEL;
+                mNotifyMgr.notify(mNotificationId, m);
             }
         }
         skylinkConnection.disconnectFromRoom();

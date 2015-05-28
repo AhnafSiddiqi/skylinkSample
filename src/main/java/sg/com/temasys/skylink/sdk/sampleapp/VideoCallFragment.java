@@ -5,10 +5,12 @@ package sg.com.temasys.skylink.sdk.sampleapp;
  */
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
@@ -56,6 +58,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private boolean connected;
     private AudioRouter audioRouter;
     public static final JSONObject UserObject = new JSONObject();
+    Vibrator c;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -76,16 +79,22 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        if(getArguments().getString("RoomName")!=null){
+            c = (Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+            c.vibrate(new long[] { 1000, 1000, 1000, 1000, 1000 }, 0);
+        }
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               String Room = getArguments().getString("RoomName");
-                Log.d("Service",Room);
-                String roomName = Room;
+                c.cancel();
+                String roomName = getArguments().getString("RoomName");
+                Log.d("Service",roomName);
                 if (roomName.isEmpty()) {
                     Toast.makeText(getActivity(), "Please enter valid room name", Toast.LENGTH_SHORT).show();
                     return;
                 }
+
 
                 btnEnterRoom.setVisibility(View.GONE);
 
