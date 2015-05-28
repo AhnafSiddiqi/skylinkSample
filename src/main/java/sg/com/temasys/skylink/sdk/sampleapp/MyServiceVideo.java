@@ -242,33 +242,11 @@ public class MyServiceVideo extends Service implements LifeCycleListener, Remote
                 Toast.makeText(this, "Client knocking", Toast.LENGTH_SHORT).show();
                 skylinkConnection.sendServerMessage(remotePeerId, "/accept"+((String) message).substring(8));
                  Toast.makeText(this, "Your peer has just connected", Toast.LENGTH_SHORT).show();
-                NotificationCompat.Builder mBuilder =
-                        new NotificationCompat.Builder(this)
-                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                                .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
-                                .setAutoCancel(true);
-                Intent resultIntent = new Intent(this, MainActivity.class);
+                Intent dialogIntent = new Intent(this, MainActivity.class);
                 String strName = ((String) message).substring(9);
-                resultIntent.putExtra("Msg",strName);
-// Because clicking the notification opens a new ("special") activity, there's
-// no need to create an artificial back stack.
-                PendingIntent resultPendingIntent =
-                        PendingIntent.getActivity(
-                                this,
-                                0,
-                                resultIntent,
-                                PendingIntent.FLAG_CANCEL_CURRENT
-                        );
-
-                mBuilder.setFullScreenIntent(resultPendingIntent,true);
-                int mNotificationId = 001;
-// Gets an instance of the NotificationManager service
-                NotificationManager mNotifyMgr =
-                        (NotificationManager)this.getSystemService(this.NOTIFICATION_SERVICE);
-// Builds the notification and issues it.
-                Notification m = mBuilder.build();
-                m.flags = Notification.FLAG_AUTO_CANCEL;
-                mNotifyMgr.notify(mNotificationId, m);
+                dialogIntent.putExtra("Msg",strName);
+                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(dialogIntent);
             }
         }
         skylinkConnection.disconnectFromRoom();

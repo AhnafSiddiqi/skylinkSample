@@ -5,7 +5,9 @@ package sg.com.temasys.skylink.sdk.sampleapp;
  */
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
@@ -84,9 +86,14 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             c = (Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE);
             c.vibrate(new long[] { 1000, 1000, 1000, 1000, 1000 }, 0);
         }
+        isMyServiceRunning();
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(isMyServiceRunning()){
+                    getActivity().stopService(new Intent(getActivity(),MyServiceVideo.class));
+
+                }
                 c.cancel();
                 String roomName = getArguments().getString("RoomName");
                 Log.d("Service",roomName);
@@ -224,6 +231,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             skylinkConnection.setMediaListener(null);
             skylinkConnection.setRemotePeerListener(null);
             connected = false;
+            getActivity().startService(new Intent(getActivity(),MyServiceVideo.class));
             audioRouter.stopAudioRouting(getActivity().getApplicationContext());
         }
     }
@@ -396,5 +404,19 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public void onOpenDataConnection(String peerId) {
         Log.d(TAG, "onOpenDataConnection");
         Toast.makeText(getActivity(), "onOpenDataConnection", Toast.LENGTH_SHORT).show();
+    }
+
+
+
+
+        public boolean isMyServiceRunning() {
+        ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            Log.d("Services",service.service.getClassName());
+            if ("sg.com.temasys.skylink.sdk.sampleapp.MyServiceVideo".equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
